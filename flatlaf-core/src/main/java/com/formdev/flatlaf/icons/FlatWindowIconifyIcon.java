@@ -16,7 +16,9 @@
 
 package com.formdev.flatlaf.icons;
 
-import java.awt.Graphics2D;
+import com.formdev.flatlaf.util.SystemInfo;
+import java.awt.*;
+import java.awt.geom.Path2D;
 
 /**
  * "iconify" icon for windows (frames and dialogs).
@@ -37,11 +39,50 @@ public class FlatWindowIconifyIcon
 
 	@Override
 	protected void paintIconAt1x( Graphics2D g, int x, int y, int width, int height, double scaleFactor ) {
-		int iw = (int) (symbolHeight * scaleFactor);
-		int ih = Math.max( (int) scaleFactor, 1 );
-		int ix = x + ((width - iw) / 2);
-		int iy = y + ((height - ih) / 2);
+		if( SystemInfo.isLinux ) {
+			switch( System.getenv( "XDG_CURRENT_DESKTOP" ) ) {
+				case "ubuntu:GNOME": {
+					int iw = (int) (symbolHeight * scaleFactor);
+					int ih = Math.max( (int) scaleFactor, 1 );
+					int ix = x + ((width - iw) / 2);
+					int iy = y + ((height - ih) / 2 + iw / 2);
 
-		g.fillRect( ix, iy, iw, ih );
+					g.fillRect( ix, iy, iw, ih );
+					break;
+				}
+				case "KDE": {
+					int iwh = (int) (symbolHeight * scaleFactor);
+					int ix = x + ((width - iwh) / 2);
+					int iy = y + ((height - iwh) / 2) + iwh / 4;
+					int ix2 = ix + iwh / 2;
+					int iy2 = iy + iwh / 2;
+					int ix3 = ix2 + iwh / 2;
+					float thickness = Math.max( (float) scaleFactor, 1 );
+
+					Path2D path = new Path2D.Float(Path2D.WIND_EVEN_ODD, 2);
+					path.moveTo( ix, iy );
+					path.lineTo( ix2, iy2 );
+					path.lineTo( ix3, iy );
+					g.setStroke( new BasicStroke(thickness) );
+					g.draw( path );
+					break;
+				}
+				default: {
+					int iw = (int) (symbolHeight * scaleFactor);
+					int ih = Math.max( (int) scaleFactor, 1 );
+					int ix = x + ((width - iw) / 2);
+					int iy = y + ((height - ih) / 2);
+
+					g.fillRect( ix, iy, iw, ih );
+				}
+			}
+		} else {
+			int iw = (int) (symbolHeight * scaleFactor);
+			int ih = Math.max( (int) scaleFactor, 1 );
+			int ix = x + ((width - iw) / 2);
+			int iy = y + ((height - ih) / 2);
+
+			g.fillRect( ix, iy, iw, ih );
+		}
 	}
 }

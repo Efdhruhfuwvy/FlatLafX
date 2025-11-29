@@ -16,7 +16,7 @@
 
 package com.formdev.flatlaf.icons;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
@@ -42,37 +42,108 @@ public class FlatWindowRestoreIcon
 
 	@Override
 	protected void paintIconAt1x( Graphics2D g, int x, int y, int width, int height, double scaleFactor ) {
-		int iwh = (int) (symbolHeight * scaleFactor);
-		int ix = x + ((width - iwh) / 2);
-		int iy = y + ((height - iwh) / 2);
-		boolean isWindows10 = SystemInfo.isWindows_10_orLater && !SystemInfo.isWindows_11_orLater;
-		float thickness = Math.max( isWindows10 ? (int) scaleFactor : (float) scaleFactor, 1 );
-		int arc = Math.max( (int) (1.5 * scaleFactor), 2 );
-		int arcOuter = (int) (arc + (1.5 * scaleFactor));
+		if( SystemInfo.isLinux ) {
+			switch( System.getenv( "XDG_CURRENT_DESKTOP" ) ) {
+				case "ubuntu:GNOME": {
+					int iwh = (int) (symbolHeight * scaleFactor);
+					int ix = x + ((width - iwh) / 2);
+					int iy = y + ((height - iwh) / 2);
+					float thickness = Math.max((float) scaleFactor, 1 );
 
-		int rwh = (int) ((symbolHeight - 2) * scaleFactor);
-		int ro2 = iwh - rwh;
+					int rwh = (int) ((symbolHeight - 2) * scaleFactor);
+					int ro2 = iwh - rwh;
 
-		// upper-right rectangle
-		Path2D r1 = SystemInfo.isWindows_11_orLater
-			? FlatUIUtils.createRoundRectangle( ix + ro2, iy, rwh, rwh, thickness, arc, arcOuter, arc, arc )
-			: FlatUIUtils.createRectangle( ix + ro2, iy, rwh, rwh, thickness );
+					// upper-right rectangle
+					Path2D r1 = FlatUIUtils.createRectangle( ix + ro2, iy, rwh,
+						rwh, thickness );
 
-		// lower-left rectangle
-		Path2D r2 = SystemInfo.isWindows_11_orLater
-			? FlatUIUtils.createRoundRectangle( ix, iy + ro2, rwh, rwh, thickness, arc, arc, arc, arc )
-			: FlatUIUtils.createRectangle( ix, iy + ro2, rwh, rwh, thickness );
+					// lower-left rectangle
+					Path2D r2 = FlatUIUtils.createRectangle( ix, iy + ro2, rwh,
+						rwh, thickness );
 
-		// paint upper-right rectangle
-		Area area = new Area( r1 );
-		if( SystemInfo.isWindows_11_orLater ) {
-			area.subtract( new Area( new Rectangle2D.Float( ix, (float) (iy + scaleFactor), rwh, rwh ) ) );
-			area.subtract( new Area( new Rectangle2D.Float( (float) (ix + scaleFactor), iy + ro2, rwh, rwh ) ) );
-		} else
-			area.subtract( new Area( new Rectangle2D.Float( ix, iy + ro2, rwh, rwh ) ) );
-		g.fill( area );
+					// paint upper-right rectangle
+					Area area = new Area( r1 );
+					area.subtract( new Area(
+						new Rectangle2D.Float( ix + ro2 - thickness,
+							iy + thickness, rwh, rwh ) ) );
+					g.fill( area );
 
-		// paint lower-left rectangle
-		g.fill( r2 );
+					// paint lower-left rectangle
+					g.fill( r2 );
+					break;
+				}
+				case "KDE": {
+					int iwh = (int) (symbolHeight * scaleFactor);
+					int ix = x + ((width - iwh) / 2) + iwh / 2;
+					int iy = y + ((height - iwh) / 2);
+					int ix2 = ix + iwh / 2;
+					int iy2 = iy + iwh / 2;
+					int ix3 = ix - iwh / 2;
+					int iy3 = iy2 + iwh / 2;
+					float thickness = Math.max( (float) scaleFactor, 1 );
+
+					Path2D path = new Path2D.Float(Path2D.WIND_EVEN_ODD, 2);
+					path.moveTo( ix, iy );
+					path.lineTo( ix2, iy2 );
+					path.lineTo( ix, iy3 );
+					path.lineTo( ix3, iy2 );
+					path.closePath();
+					g.setStroke( new BasicStroke(thickness) );
+					g.draw( path );
+					break;
+				}
+				default: {
+					int iw = (int) (symbolHeight * scaleFactor);
+					int ih = Math.max( (int) scaleFactor, 1 );
+					int ix = x + ((width - iw) / 2);
+					int iy = y + ((height - ih) / 2);
+
+					g.fillRect( ix, iy, iw, ih );
+				}
+			}
+		} else {
+			int iwh = (int) (symbolHeight * scaleFactor);
+			int ix = x + ((width - iwh) / 2);
+			int iy = y + ((height - iwh) / 2);
+			boolean isWindows10 = SystemInfo.isWindows_10_orLater && !SystemInfo.isWindows_11_orLater;
+			float thickness = Math.max(
+				isWindows10 ? (int) scaleFactor : (float) scaleFactor, 1 );
+			int arc = Math.max( (int) (1.5 * scaleFactor), 2 );
+			int arcOuter = (int) (arc + (1.5 * scaleFactor));
+
+			int rwh = (int) ((symbolHeight - 2) * scaleFactor);
+			int ro2 = iwh - rwh;
+
+			// upper-right rectangle
+			Path2D r1 = SystemInfo.isWindows_11_orLater
+				? FlatUIUtils.createRoundRectangle( ix + ro2, iy, rwh, rwh,
+				thickness, arc, arcOuter, arc, arc )
+				: FlatUIUtils.createRectangle( ix + ro2, iy, rwh, rwh,
+					thickness );
+
+			// lower-left rectangle
+			Path2D r2 = SystemInfo.isWindows_11_orLater
+				? FlatUIUtils.createRoundRectangle( ix, iy + ro2, rwh, rwh,
+				thickness, arc, arc, arc, arc )
+				: FlatUIUtils.createRectangle( ix, iy + ro2, rwh, rwh,
+					thickness );
+
+			// paint upper-right rectangle
+			Area area = new Area( r1 );
+			if( SystemInfo.isWindows_11_orLater ) {
+				area.subtract( new Area(
+					new Rectangle2D.Float( ix, (float) (iy + scaleFactor), rwh,
+						rwh ) ) );
+				area.subtract( new Area(
+					new Rectangle2D.Float( (float) (ix + scaleFactor), iy + ro2,
+						rwh, rwh ) ) );
+			} else
+				area.subtract( new Area(
+					new Rectangle2D.Float( ix, iy + ro2, rwh, rwh ) ) );
+			g.fill( area );
+
+			// paint lower-left rectangle
+			g.fill( r2 );
+		}
 	}
 }
