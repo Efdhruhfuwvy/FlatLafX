@@ -16,7 +16,10 @@
 
 package com.formdev.flatlaf.icons;
 
-import java.awt.Graphics2D;
+import java.awt.*;
+import java.awt.geom.Area;
+import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 import com.formdev.flatlaf.ui.FlatUIUtils;
 import com.formdev.flatlaf.util.SystemInfo;
 
@@ -39,15 +42,34 @@ public class FlatWindowMaximizeIcon
 
 	@Override
 	protected void paintIconAt1x( Graphics2D g, int x, int y, int width, int height, double scaleFactor ) {
-		int iwh = (int) (symbolHeight * scaleFactor);
-		int ix = x + ((width - iwh) / 2);
-		int iy = y + ((height - iwh) / 2);
-		boolean isWindows10 = SystemInfo.isWindows_10_orLater && !SystemInfo.isWindows_11_orLater;
-		float thickness = Math.max( isWindows10 ? (int) scaleFactor : (float) scaleFactor, 1 );
-		int arc = Math.max( (int) (1.5 * scaleFactor), 2 );
+		if( SystemInfo.isKDE ) {
+			int iwh = (int) (symbolHeight * scaleFactor);
+			int ix = x + ((width - iwh) / 2);
+			int iy = y + ((height - iwh) / 2) + iwh * 3 / 4;
+			int ix2 = ix + iwh / 2;
+			int iy2 = iy - iwh / 2;
+			int ix3 = ix2 + iwh / 2;
+			float thickness = Math.max( (float) scaleFactor, 1 );
 
-		g.fill( SystemInfo.isWindows_11_orLater
-			? FlatUIUtils.createRoundRectangle( ix, iy, iwh, iwh, thickness, arc, arc, arc, arc )
-			: FlatUIUtils.createRectangle( ix, iy, iwh, iwh, thickness ) );
+			Path2D path = new Path2D.Float( Path2D.WIND_EVEN_ODD, 2 );
+			path.moveTo( ix, iy );
+			path.lineTo( ix2, iy2 );
+			path.lineTo( ix3, iy );
+			g.setStroke( new BasicStroke( thickness ) );
+			g.draw( path );
+		} else {
+			int iwh = (int) (symbolHeight * scaleFactor);
+			int ix = x + ((width - iwh) / 2);
+			int iy = y + ((height - iwh) / 2);
+			boolean isWindows10 = SystemInfo.isWindows_10_orLater && !SystemInfo.isWindows_11_orLater;
+			float thickness = Math.max(
+				isWindows10 ? (int) scaleFactor : (float) scaleFactor, 1 );
+			int arc = Math.max( (int) (1.5 * scaleFactor), 2 );
+
+			g.fill( SystemInfo.isWindows_11_orLater
+				? FlatUIUtils.createRoundRectangle( ix, iy, iwh, iwh, thickness,
+				arc, arc, arc, arc )
+				: FlatUIUtils.createRectangle( ix, iy, iwh, iwh, thickness ) );
+		}
 	}
 }
