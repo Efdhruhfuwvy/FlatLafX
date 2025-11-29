@@ -1527,6 +1527,17 @@ debug*/
 			if( hasNativeCustomDecoration() )
 				return; // do nothing if having native window border
 
+			try {
+				Class<?> jbrClass = Class.forName( "com.jetbrains.JBR" );
+				Class<?> windowMoveClass = Class.forName(
+					"com.jetbrains.WindowMove" );
+				Object windowMove = jbrClass.getMethod( "getWindowMove" )
+					.invoke( jbrClass );
+				windowMoveClass.getMethod( "startMovingTogetherWithMouse",
+						Window.class, int.class )
+					.invoke( windowMove, window, e.getButton() );
+			} catch( Exception ignored ) {
+			}
 			// on Linux, move window using window manager
 			if( SystemInfo.isLinux && FlatNativeLinuxLibrary.isWMUtilsSupported( window ) ) {
 				linuxNativeMove = FlatNativeLinuxLibrary.moveOrResizeWindow( window, e, FlatNativeLinuxLibrary.MOVE );
